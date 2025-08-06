@@ -42,7 +42,7 @@ def extract_sequences(open_file: TextIO, identifiers: Iterable[str], identifier_
     return res
 
 # TODO change to fasta iterator
-def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[(str, str), None, None]:
+def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, str], None, None]:
     """
     An Iterator over an opened fasta file.
 
