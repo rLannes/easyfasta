@@ -1,6 +1,8 @@
 [build-system]
 requires = ["hatchling >= 1.26", "hatch-vcs"]
 build-backend = "hatchling.build"
+#requires = ["setuptools>=77.0.3", "wheel"]
+#build-backend = "setuptools.build_meta"
 
 [project]
 name = "FastaUtils"
@@ -14,10 +16,13 @@ maintainers = [
 ]
 description = "A lightweight Python library for efficient FASTA file parsing and DNA sequence manipulation."
 readme = "README.md"
-license-files = ["LICENSE"]
+#license-files = ["LICENSE"]
+#license-file = "LICENSE"
+
 license = {text = "MIT"} 
 keywords = ["bioinformatics", "fasta"]
 classifiers = [ "Development Status :: 5 - Production/Stable",
+"License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -36,5 +41,5 @@ Homepage = "https://github.com/rLannes/FastaUtils"
 Repository = "https://github.com/rLannes/FastaUtils"
 Documentation = "https://github.com/rLannes/FastaUtils"
 
-[tool.setuptools]
-license-file = []
+#[tool.setuptools]
+#license-file = []
