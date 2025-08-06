@@ -14,6 +14,7 @@ maintainers = [
 ]
 description = "A lightweight Python library for efficient FASTA file parsing and DNA sequence manipulation."
 readme = "README.md"
+license-files = ["LICENSE"]
 license = {text = "MIT"} 
 keywords = ["bioinformatics", "fasta"]
 classifiers = [ "Development Status :: 5 - Production/Stable",
@@ -34,3 +35,6 @@ source = "vcs"
 Homepage = "https://github.com/rLannes/FastaUtils"
 Repository = "https://github.com/rLannes/FastaUtils"
 Documentation = "https://github.com/rLannes/FastaUtils"
+
+[tool.setuptools]
+license-file = []
