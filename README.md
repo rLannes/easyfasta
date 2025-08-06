@@ -79,7 +79,7 @@ with open('sequences.fasta') as f:
 ### Sequence Manipulation
 
 #### `complement(seq: str) -> str`
-Return the complement of a DNA sequence (A↔T, C↔G, supports IUPAC codes).
+Return the complement of a DNA sequence (A↔T, C↔G, supports all IUPAC codes).
 
 #### `reverse(seq: str) -> str`
 Return the reverse of a sequence.
@@ -88,11 +88,14 @@ Return the reverse of a sequence.
 Return the reverse complement of a DNA sequence.
 
 #### `wrap_sequence(sequence: str, chunk_size: int = 80) -> str`
-Format sequence with line breaks every `chunk_size` characters (standard FASTA format).
+Format sequence with line breaks every `chunk_size` characters (standard multiline FASTA format).
 
 ```python
 formatted = wrap_sequence("ATCGATCGATCG" * 10, 60)
 print(formatted)  # 60 characters per line
+# write to a file
+with open(out_file, 'w') as fo:
+   fo.write(">{}\n{}\n".format('seq_id',  wrap_sequence("ATCGATCGATCG" * 10, 80)))
 ```
 
 ## Design Philosophy
@@ -100,7 +103,7 @@ print(formatted)  # 60 characters per line
 This library prioritizes:
 
 - **Memory efficiency**: Built for large genomic files that don't fit in RAM
-- **Simplicity**: Clean, predictable API with minimal dependencies
+- **Simplicity**: Clean, predictable API with minimal dependencies. Not OOP bloat, only data.
 - **Performance**: Stream-based processing with O(1) memory usage for parsing
 - **Standards compliance**: Full IUPAC nucleotide code support
 
@@ -118,9 +121,9 @@ This library prioritizes:
 - No external dependencies
 
 ## License
-
-[Add your license here]
+MIT
 
 ## Contributing
-
-[Add contribution guidelines if desired]
+Feel free to ask for new features. I published it as lightweight because those are the feature I use the most and wanted to start with a solid fondation.
+I am working on a extremly fast indexing system for fasta file, beating faidx (I will publish it if people are interested.)
+I used this library for years, and it has been extensively tested. As such I will only adress issue that come with a minimal reproducible problem.
