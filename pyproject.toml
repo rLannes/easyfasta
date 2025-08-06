@@ -14,7 +14,7 @@ maintainers = [
 ]
 description = "A lightweight Python library for efficient FASTA file parsing and DNA sequence manipulation."
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"} 
 keywords = ["bioinformatics", "fasta"]
 classifiers = [ "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python :: 3",
