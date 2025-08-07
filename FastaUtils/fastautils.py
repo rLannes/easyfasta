@@ -4,13 +4,13 @@ from collections.abc import Iterable
 from typing import TextIO, Generator
 
 
-def chunk_seq(sequence: str, chunk_size: int=80) -> str:
+def wrap_sequence(sequence: str, chunk_size: int=80) -> str:
     """
-    chunk a string in mulitple line by adding a new line every chunck size
-    usefull to write mulit line fasta.
+    chunk a string in multiple lines by adding a new line every chunk size
+    usefull to write multiline fasta.
 
     :param str sequence: the string to make multiline
-    :param int chunksize: the size of the line.
+    :param int chunk_size: the size of the line.
     
     """
     new_seq = ""
@@ -21,23 +21,80 @@ def chunk_seq(sequence: str, chunk_size: int=80) -> str:
     return new_seq.strip()
 
 
-def extract_sequences(open_file: TextIO, identifiers: Iterable[str], identifier_only: bool=True) -> list[tuple[str, str]]:
+def build_index(fasta_file: str|Path) -> dict[str, int]:
+    """
+    build an index from a fasta file, dict sequence identifier -> position
+
+    :param str|Path fasta_file: the fasta file to build index from
+    :return  dict[str, int]: index dictionnary  identifier -> position
+    """
+    index = {}
+    with open(fasta_file) as fi:
+        for p, s, i in fasta_iter(fi, position=True):
+            index[p.split()[0]] = i
+    return index
+
+def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = False) -> list[tuple[str, str]]:
+    """
+    uses index to get sequence from a file faster than just parsing through the file. you need to generate an index first (you can use build_index)
+    will raise an error if any identifier in identifiers are not in the dict. you can turn off this by setting ignore_unfound to True
+
+
+    .. code-block:: python
+        index = build_index(fasta_file)
+        # you can save/load the index using pickle 
+        pickle.dump(index, filename)
+        index = pickle.load(filename)
+        # this can save large amount of time on large file
+        sequences = get_sequence_index(fasta_file, identifiers, index)
+
+    :param str|Path  fasta_file: an opened fasta file
+    :param Iterable identifier: an iterable with id to recover sequence from
+    :param dict[str, int] index_dict: a dictionnary associating identifier to a position in file, you can make one from build_index
+    :param bool ignore_unfound: defualt False.
+    :return [(str, str)]: [(identifier, sequence)] for each sequences with identifier present in identifier
+
+    """
+    res = []
+    with open(fasta_file) as open_file:
+
+        for id_ in identifiers:
+
+            offset = index_dict.get(id_)
+            if offset is None and ignore_unfound:
+                continue
+            elif offset is None:
+                index_dict[id_]  #raise eror
+            open_file.seek(offset, 0)
+
+            open_file.readline()
+            sequence = open_file.readline()
+            line = open_file.readline()
+            while not line.startswith(">"):
+                sequence += line.strip()
+                line = open_file.readline()
+            res.append((id_, sequence))
+        return res
+
+
+def get_sequence_id(fasta_file: str|Path, identifiers: Iterable[str], identifier_only: bool=True) -> list[tuple[str, str]]:
     """
     return sequence in identifiers from the opened fasta_file open_file. !! will NOT throw a warning/error if a sequence is not found in the fasta!!
 
-    :param TextIO  open_file: an opened fasta file
+    :param str|Path  fasta_file: an opened fasta file
     :param Iterable identifier: an iterable with id to recover sequence from
     :param bool identifier_only: fasta are composed of identifier and metadata, by default only use the identifier part of the fasta line set to false to use the full line.
     :return [(str, str)]: [(identifier, sequence)] for each sequences with identifier present in identifier
 
     """
     res = []
-    open_file.seek(0)
-    for p, s in fasta_iter(open_file=open_file):
-        if identifier_only:
-            p = p.split()[0]
-        if p in identifiers:
-            res.append((p, s))
+
+    with open(fasta_file) as open_file:
+        for p, s in fasta_iter(open_file=open_file):
+            if identifier_only:
+                p = p.split()[0]
+            if p in identifiers:
+                res.append((p, s))
     
     return res
 
@@ -46,9 +103,9 @@ def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, s
     """
     An Iterator over an opened fasta file.
 
-    Note: I developed this while working on extremly large fasta file, which make no sense to load into memory.
+    Note: I developed this while working on extremely large fasta file, which make no sense to load into memory.
 
-    .. code-block:: pyhton
+    .. code-block:: python
 
         with open(fasta_file) as fi:
             for identifier_line, sequence in fasta_iter(fi):
