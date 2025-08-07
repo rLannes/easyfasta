@@ -11,6 +11,8 @@ def wrap_sequence(sequence: str, chunk_size: int=80) -> str:
 
     :param str sequence: the string to make multiline
     :param int chunk_size: the size of the line.
+
+    :return str: 
     
     """
     new_seq = ""
@@ -67,14 +69,16 @@ def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_di
                 index_dict[id_]  #raise eror
             open_file.seek(offset, 0)
 
-            open_file.readline()
-            sequence = open_file.readline()
-            line = open_file.readline()
-            while not line.startswith(">"):
+            r = open_file.readline()
+            
+            sequence = ""
+            line = open_file.readline().strip()
+
+            while not line.startswith(">") and line:
                 sequence += line.strip()
                 line = open_file.readline()
             res.append((id_, sequence))
-        return res
+    return res
 
 
 def get_sequence_id(fasta_file: str|Path, identifiers: Iterable[str], identifier_only: bool=True) -> list[tuple[str, str]]:
@@ -120,6 +124,8 @@ def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, s
     """
 
     pos = 0
+    last_pos = 0
+    
     p, seq = "", ""
     open_file.seek(0)
 
@@ -133,9 +139,11 @@ def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, s
                 if not position:
                     yield p, seq
                 else:
-                    yield p, seq, pos
+                    yield p, seq, last_pos
                 p, seq = "", ""
-
+                last_pos = pos
+                pos = open_file.tell()
+                
             p = line[1:].strip()
 
         else:
@@ -146,7 +154,7 @@ def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, s
     if not position:
         yield p, seq
     else:
-        yield p, seq, pos
+        yield p, seq, last_pos
 
 
 def load_fasta(fasta) -> dict[str: str]:
@@ -198,6 +206,8 @@ def reverse_complement(seq: str) -> str:
 
     """
     return "".join([DNA_COMPLEMENT[x] for x in seq[::-1]])
+
+
 
 
 
