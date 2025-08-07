@@ -1,6 +1,6 @@
 # FASTA Utils
 
-A lightweight functional Python library for efficient FASTA file parsing and DNA sequence manipulation. No OOP bloat, data only data
+A lightweight functional Python library for efficient FASTA file parsing and DNA sequence manipulation. No OOP bloat, data only data.
 
 ## Features
 
@@ -153,5 +153,5 @@ MIT
 
 ## Contributing
 Feel free to ask for new features. I published it as lightweight because those are the feature I use the most and wanted to start with a solid fondation.
-In pipe, update extract_sequences to be able to use bits position (indexing).
+
 I used this library for years, and it has been extensively tested. As such I will only adress issue that come with a minimal reproducible problem.
