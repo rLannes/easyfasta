@@ -1,6 +1,6 @@
 # FASTA Utils
 
-A lightweight functional Python library for efficient FASTA file parsing and DNA sequence manipulation. No OOP bloat, data only data.
+A lightweight functional Python library for efficient FASTA file parsing and DNA sequence manipulation. No OOP bloat, only data.
 
 ## Features
 
@@ -11,12 +11,16 @@ A lightweight functional Python library for efficient FASTA file parsing and DNA
 - **Formatting**: Convert sequences to multi-line FASTA format
 - **Does not validate input**: user are responsible to provide correctly formatted file.
 ## Installation
-
-Simply copy the module to your project or install via pip (if published).
+python 3.8+
+```
+> pip install fastautils
+```
+or simply copy the module to your project
 
 ## Quick Start
 
 ```python
+from fastautils import *
 # Parse FASTA file sequence by sequence (memory efficient)
 with open('sequences.fasta') as f:
     for header, sequence in fasta_iter(f):
@@ -36,10 +40,11 @@ for header, seq in found:
 # Extract specific sequences using indexes
 index = build_index('sequences.fasta')
 # using pickle you can save and load the index
+#import pickle
 #pickle.dump(index, "save_index_file.pkl")
 #index = pickle.load("save_index_file.pkl")
 target_ids = ['seq1', 'seq2', 'seq3']
-found = get_sequence_index(f, target_ids, index, ignore_unfound=True)
+found = get_sequence_index('sequences.fasta', target_ids, index, ignore_unfound=True)
 for header, seq in found:
     print(f"Found: {header}")
 
@@ -137,10 +142,9 @@ This library prioritizes:
 
 ## Use Cases
 
-- Processing large genome assemblies
-- Extracting specific genes or regions
-- Converting between sequence formats
-- Quality control pipelines
+- Processing large fasta file (metagenome)
+- Common DNA sequence manipulation
+- Common operations on fasta including parsing, indexing and sequence retrieval.
 - Bioinformatics workflows requiring memory efficiency
 
 ## Requirements
