@@ -98,7 +98,7 @@ Build a fasta index as a dictionary
 index = build_index(fasta_file)
 ```
 
-#### `get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = False) -> list[tuple[str, str]]`
+#### `get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]`
 
 use index to retrieve sequence (faster)
 

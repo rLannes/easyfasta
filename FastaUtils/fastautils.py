@@ -37,10 +37,10 @@ def build_index(fasta_file: str|Path) -> dict[str, int]:
     return index
 
 
-def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = False) -> list[tuple[str, str]]:
+def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]:
     """
     uses index to get sequence from a file faster than just parsing through the file. you need to generate an index first (you can use build_index)
-    will raise an error if any identifier in identifiers are not in the dict. you can turn off this by setting ignore_unfound to True
+    will not raise an error if any identifier in identifiers are not in the dict. you can turn off this by setting ignore_unfound to False
 
 
     .. code-block:: python
@@ -54,7 +54,7 @@ def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_di
     :param str|Path  fasta_file: a fasta file
     :param Iterable identifier: an iterable with id to recover sequence from
     :param dict[str, int] index_dict: a dictionary associating identifier to a position in file, you can make one from build_index
-    :param bool ignore_unfound: default False.
+    :param bool ignore_unfound: default True.
     :return [(str, str)]: [(identifier, sequence)] for each sequences with identifier present in identifier
 
     """
