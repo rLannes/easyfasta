@@ -1,8 +1,7 @@
 [build-system]
 requires = ["hatchling >= 1.26", "hatch-vcs"]
 build-backend = "hatchling.build"
-#requires = ["setuptools>=77.0.3", "wheel"]
-#build-backend = "setuptools.build_meta"
+
 
 [project]
 name = "easyfasta"
@@ -16,8 +15,7 @@ maintainers = [
 ]
 description = "A lightweight Python library for efficient FASTA file parsing and DNA sequence manipulation."
 readme = "README.md"
-#license-files = ["LICENSE"]
-#license-file = "LICENSE"
+
 
 license = {text = "MIT"} 
 keywords = ["bioinformatics", "fasta"]
@@ -40,6 +38,3 @@ source = "vcs"
 Homepage = "https://github.com/rLannes/easyfasta"
 Repository = "https://github.com/rLannes/easyfasta"
 Documentation = "https://github.com/rLannes/easyfasta"
-
-#[tool.setuptools]
-#license-file = []
