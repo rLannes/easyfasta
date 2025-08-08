@@ -1,4 +1,4 @@
-# FASTA Utils
+# Easy Fasta
 
 A lightweight functional Python library for efficient FASTA file parsing and DNA sequence manipulation. No OOP bloat, only data.
 
@@ -13,14 +13,14 @@ A lightweight functional Python library for efficient FASTA file parsing and DNA
 ## Installation
 python 3.8+
 ```
-> pip install fastautils
+> pip install easyfasta
 ```
 or simply copy the module to your project
 
 ## Quick Start
 
 ```python
-from fastautils import *
+from easyfasta import *
 # Parse FASTA file sequence by sequence (memory efficient)
 with open('sequences.fasta') as f:
     for header, sequence in fasta_iter(f):

@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 #build-backend = "setuptools.build_meta"
 
 [project]
-name = "fastautils"
+name = "easyfasta"
 dynamic = ["version"]
 requires-python = ">= 3.8"
 authors = [
@@ -37,9 +37,9 @@ classifiers = [ "Development Status :: 5 - Production/Stable",
 source = "vcs"
 
 [project.urls]
-Homepage = "https://github.com/rLannes/FastaUtils"
-Repository = "https://github.com/rLannes/FastaUtils"
-Documentation = "https://github.com/rLannes/FastaUtils"
+Homepage = "https://github.com/rLannes/easyfasta"
+Repository = "https://github.com/rLannes/easyfasta"
+Documentation = "https://github.com/rLannes/easyfasta"
 
 #[tool.setuptools]
 #license-file = []

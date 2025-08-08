@@ -1,4 +1,4 @@
-from .fastautils import *
+from .easyfasta import *
 
 __version__ = "1.0.4"
 
