@@ -20,7 +20,6 @@ __all__ = [
     "complement",
     "reverse",
     "reverse_complement"
-
 ]
 
 __version__ = "1.0.4"
