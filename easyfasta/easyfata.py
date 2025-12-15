@@ -1,8 +1,8 @@
+from __future__ import annotations
 import typing
 from pathlib import Path
 from collections.abc import Iterable
 from typing import TextIO, Generator
-
 
 def wrap_sequence(sequence: str, chunk_size: int=80) -> str:
     """

@@ -1,3 +1,4 @@
+from __future__ import annotations
 from .easyfata import(
     wrap_sequence,
     build_index,
@@ -22,5 +23,5 @@ __all__ = [
     "reverse_complement"
 ]
 
-__version__ = "1.0.4"
+__version__ = "1.0.5"
 
