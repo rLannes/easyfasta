@@ -6,10 +6,12 @@ A lightweight functional Python library for efficient FASTA file parsing and DNA
 
 - **Memory-efficient parsing**: Stream through large FASTA files without loading everything into memory
 - **Random access**: Jump directly to specific sequences with position tracking
+- **FAI indexing**: Build and query standard `.fai` index files for fast random access
 - **Sequence extraction**: Filter sequences by identifiers
 - **DNA manipulation**: Complete IUPAC-compliant complement and reverse complement operations
 - **Formatting**: Convert sequences to multi-line FASTA format
-- **Does not validate input**: user are responsible to provide correctly formatted file.
+- **Does not validate input**: users are responsible to provide correctly formatted files.
+
 ## Installation
 python 3.8+
 ```
@@ -21,6 +23,7 @@ or simply copy the module to your project
 
 ```python
 from easyfasta import *
+
 # Parse FASTA file sequence by sequence (memory efficient)
 with open('sequences.fasta') as f:
     for header, sequence in fasta_iter(f):
@@ -37,16 +40,21 @@ found = get_sequence_id('sequences.fasta', target_ids)
 for header, seq in found:
     print(f"Found: {header}")
 
-# Extract specific sequences using indexes
-index = build_index('sequences.fasta')
+# Extract specific sequences using a dictionary index
+index = build_dico_index('sequences.fasta')
 # using pickle you can save and load the index
 #import pickle
 #pickle.dump(index, "save_index_file.pkl")
 #index = pickle.load("save_index_file.pkl")
 target_ids = ['seq1', 'seq2', 'seq3']
-found = get_sequence_index('sequences.fasta', target_ids, index, ignore_unfound=True)
+found = get_sequence_dico_index('sequences.fasta', target_ids, index, ignore_unfound=True)
 for header, seq in found:
     print(f"Found: {header}")
+
+# FAI index for fast random access
+build_index('sequences.fasta')  # creates sequences.fasta.fai
+index = load_index('sequences.fasta')  # load into memory for repeated queries
+seq = query('sequences.fasta', 'seq1', 0, 100, strand='+', dico_index=index)
 
 # DNA manipulation
 dna = "ATCGGTAA"
@@ -89,24 +97,52 @@ wanted = ['seq1', 'seq2']
 results = get_sequence_id('sequences.fasta', wanted)
 ```
 
-#### `build_index(fasta_file: str|Path) -> dict[str, int]`
+### Dictionary Index Functions
 
-Build a fasta index as a dictionary
+#### `build_dico_index(fasta_file: str|Path) -> dict[str, int]`
 
+Build an in-memory index as a dictionary mapping sequence identifiers to their byte position in the file.
 
 ```python
-index = build_index(fasta_file)
+index = build_dico_index('sequences.fasta')
 ```
 
-#### `get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]`
+#### `get_sequence_dico_index(fasta_file: str|Path, identifiers: Iterable[str], index_dict: dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]`
 
-use index to retrieve sequence (faster)
-
+Use a dictionary index to retrieve sequences faster than parsing through the file.
 
 ```python
-index = build_index(fasta_file)
+index = build_dico_index('sequences.fasta')
 wanted = ['seq1', 'seq2']
-get_sequence_index(fasta_file, wanted, index)
+results = get_sequence_dico_index('sequences.fasta', wanted, index)
+```
+
+### FAI Index Functions
+
+#### `build_index(fasta: str|Path) -> None`
+
+Build a standard `.fai` index file next to the fasta file. Required before using `load_index` or `query`.
+
+```python
+build_index('sequences.fasta')  # creates sequences.fasta.fai
+```
+
+#### `load_index(fasta: str|Path) -> dict[str, list]`
+
+Load a `.fai` index file into memory for repeated queries.
+
+```python
+index = load_index('sequences.fasta')
+```
+
+#### `query(fasta: str|Path, name: str, start: int, end: int, strand: str = "+", dico_index: dict = None) -> str`
+
+Query a fasta file for a sequence by name and coordinates using the FAI index. Returns the reverse complement if strand is `"-"`.
+
+```python
+build_index('sequences.fasta')
+index = load_index('sequences.fasta')
+seq = query('sequences.fasta', 'chr1', 1000, 2000, strand='+', dico_index=index)
 ```
 
 ### Sequence Manipulation
@@ -128,8 +164,39 @@ formatted = wrap_sequence("ATCGATCGATCG" * 10, 60)
 print(formatted)  # 60 characters per line
 # write to a file
 with open(out_file, 'w') as fo:
-   fo.write(">{}\n{}\n".format('seq_id',  wrap_sequence("ATCGATCGATCG" * 10, 80)))
+   fo.write(">{}\n{}\n".format('seq_id', wrap_sequence("ATCGATCGATCG" * 10, 80)))
 ```
+
+## Migration Guide: 1.0.14 → 1.1.0
+
+Version 1.1.0 introduces FAI index support and contains **breaking changes**.
+
+### Breaking Changes
+
+| 1.0.14 | 1.1.0 | Notes |
+|--------|-------|-------|
+| `build_index()` | `build_dico_index()` | `build_index()` now builds a `.fai` file, not a dictionary |
+| `get_sequence_index()` | `get_sequence_dico_index()` | straight rename |
+
+### New in 1.1.0
+
+- `build_index()` — builds a standard `.fai` index file
+- `load_index()` — loads a `.fai` index into memory
+- `query()` — fast random access to any sequence region by coordinates
+
+### What you need to change
+
+```python
+# 1.0.14
+index = build_index('sequences.fasta')
+results = get_sequence_index('sequences.fasta', ids, index)
+
+# 1.1.0
+index = build_dico_index('sequences.fasta')
+results = get_sequence_dico_index('sequences.fasta', ids, index)
+```
+
+> ⚠️ **Important**: `build_index()` no longer returns a dictionary. Calling it expecting a dictionary index will silently produce wrong results. Use `build_dico_index()` instead.
 
 ## Design Philosophy
 
@@ -142,9 +209,9 @@ This library prioritizes:
 
 ## Use Cases
 
-- Processing large fasta file (metagenome)
+- Processing large fasta files (metagenome)
 - Common DNA sequence manipulation
-- Common operations on fasta including parsing, indexing and sequence retrieval.
+- Common operations on fasta including parsing, indexing and sequence retrieval
 - Bioinformatics workflows requiring memory efficiency
 
 ## Requirements
@@ -156,6 +223,6 @@ This library prioritizes:
 MIT
 
 ## Contributing
-Feel free to ask for new features. I published it as lightweight because those are the feature I use the most and wanted to start with a solid fondation.
+Feel free to ask for new features. I published it as lightweight because those are the features I use the most and wanted to start with a solid foundation.
 
-I used this library for years, and it has been extensively tested. As such I will only adress issue that come with a minimal reproducible problem.
+I used this library for years, and it has been extensively tested. As such I will only address issues that come with a minimal reproducible problem.

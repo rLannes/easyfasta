@@ -1,8 +1,11 @@
 from __future__ import annotations
 import typing
+import fai_common
 from pathlib import Path
 from collections.abc import Iterable
 from typing import TextIO, Generator
+import logging
+log = logging.getLogger(__name__)
 
 def wrap_sequence(sequence: str, chunk_size: int=80) -> str:
     """
@@ -23,7 +26,49 @@ def wrap_sequence(sequence: str, chunk_size: int=80) -> str:
     return new_seq.strip()
 
 
-def build_index(fasta_file: str|Path) -> dict[str, int]:
+def build_index(fasta):
+    """
+    Build a .fai index file for a fasta file.
+    :param str|Path fasta: the fasta file to index
+    :return None: creates a .fai file next to the fasta file
+    """
+    fai_common.fasta_index_fai(fasta)
+    
+
+def query(fasta, name, start, end, strand="+", dico_index=None):
+    """
+    Query a fasta file for a sequence by name and coordinates.
+    :param str|Path fasta: the fasta file to query
+    :param str name: the sequence identifier to query
+    :param int start: the start position (0-based)
+    :param int end: the end position (0-based, exclusive)
+    :param str strand: the strand to query, "+" or "-", default "+"
+    :param dict|None dico_index: a preloaded index dictionary, if None the index is loaded from disk
+    :return str: the queried sequence, reverse complemented if strand is "-"
+    """
+
+    return fai_common.query(fasta, name, start, end, strand=strand, dico_index=dico_index)
+
+def load_index(fasta):
+    """
+    Load a .fai index file into a dictionary for repeated queries.
+    :param str|Path fasta: the fasta file whose index to load
+    :return dict[str, list]: index dictionary identifier -> [length, offset, linebases, line_bytes]
+    """
+    index = fasta + ".fai"
+    if not Path(index).is_file():
+        raise AssertionError("cannot find the fai file, is your fasta indexed? ")
+    
+    if dico_index is None:
+        dico_index = {}
+        with open(index) as fi:
+            for l in fi:
+                spt = l.strip().split()
+                dico_index[spt[0]] = spt[1:]
+    return dico_index
+
+
+def build_dico_index(fasta_file: str|Path) -> dict[str, int]:
     """
     build an index from a fasta file, dict sequence identifier -> position
 
@@ -36,7 +81,7 @@ def build_index(fasta_file: str|Path) -> dict[str, int]:
             index[p.split()[0]] = i
     return index
 
-def get_sequence_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]:
+def get_sequence_dico_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]:
     """
     uses index to get sequence from a file faster than just parsing through the file. you need to generate an index first (you can use build_index)
     will not raise an error if any identifier in identifiers are not in the dict. you can turn off this by setting ignore_unfound to True
@@ -103,7 +148,7 @@ def get_sequence_id(fasta_file: str|Path, identifiers: Iterable[str], identifier
     
     return res
 
-# TODO change to fasta iterator
+
 def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, str], None, None] |  Generator[tuple[str, str, int], None, None]:
     """
     An Iterator over an opened fasta file.
@@ -207,3 +252,5 @@ def reverse_complement(seq: str) -> str:
 
     """
     return "".join([DNA_COMPLEMENT[x] for x in seq[::-1]])
+
+
