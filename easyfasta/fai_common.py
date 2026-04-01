@@ -1,6 +1,11 @@
+from __future__ import annotations
 """This module manage all fai related functions"""
 from collections import deque
-import easyfasta
+
+import typing
+from collections.abc import Iterable
+from typing import TextIO, Generator
+import common
 from pathlib import Path
 import logging
 log = logging.getLogger(__name__)
@@ -23,7 +28,7 @@ class line_length_checker():
         self.data.clear()
 
     def size(self):
-        return self.pop()
+        return self.data.pop()
 
 
 
@@ -35,8 +40,8 @@ def make_fasta_multiline(fasta, out):
     """
 
     with open(fasta) as fi, open(out, 'w') as fo:
-        for p,s in easyfasta.fasta_iter(fi):
-            fo.write(">{}\n{}\n".format(p, easyfasta.wrap_sequence(s, 100)))
+        for p,s in common.fasta_iter(fi):
+            fo.write(">{}\n{}\n".format(p, common.wrap_sequence(s, 100)))
 
 def fasta_index_fai(fasta):  
 
@@ -112,7 +117,7 @@ def query(fasta, name, start, end, strand="+", dico_index=None):
 
     seq = "".join(seq.strip().split())
     if strand == "-":
-        seq = easyfasta.reverse_complement(seq)
+        seq = common.reverse_complement(seq)
     return seq
 
 
