@@ -6,6 +6,8 @@ import typing
 from collections.abc import Iterable
 from typing import TextIO, Generator
 from .common import fasta_iter, wrap_sequence, reverse_complement
+#from common import fasta_iter, wrap_sequence, reverse_complement
+
 from pathlib import Path
 import logging
 log = logging.getLogger(__name__)
@@ -56,8 +58,12 @@ def fasta_index_fai(fasta):
         new_line = fi.readline()
 
         while new_line:
+            if not new_line.strip(): # empty line
+                new_line = fi.readline()
+                continue
+                
             if new_line.startswith(">"):
-                if name: 
+                if name is not None: 
                     fo.write("{}\t{}\t{}\t{}\t{}\n".format(name, str(seq_size), str(offset), str(line_base_checker.size()), str(line_off_checker.size())))
                 line_base_checker.reset()
                 line_off_checker.reset()
@@ -76,9 +82,10 @@ def fasta_index_fai(fasta):
                                         " only the last line can differ in size")
 
         
-        prev_line_cursor = fi.tell()
-        new_line = fi.readline()
-    fo.write("{}\t{}\t{}\t{}\t{}\n".format(name, str(seq_size), str(offset), str(line_base_checker.size()), str(line_off_checker.size())))
+            prev_line_cursor = fi.tell()
+            new_line = fi.readline()
+
+        fo.write("{}\t{}\t{}\t{}\t{}\n".format(name, str(seq_size), str(offset), str(line_base_checker.size()), str(line_off_checker.size())))
 
 
 def query(fasta, name, start, end, strand="+", dico_index=None):
