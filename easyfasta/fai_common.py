@@ -35,8 +35,8 @@ def make_fasta_multiline(fasta, out):
     """
 
     with open(fasta) as fi, open(out, 'w') as fo:
-        for p,s in easyfata.fasta_iter(fi):
-            fo.write(">{}\n{}\n".format(p, easyfata.wrap_sequence(s, 100)))
+        for p,s in easyfasta.fasta_iter(fi):
+            fo.write(">{}\n{}\n".format(p, easyfasta.wrap_sequence(s, 100)))
 
 def fasta_index_fai(fasta):  
 
@@ -112,7 +112,7 @@ def query(fasta, name, start, end, strand="+", dico_index=None):
 
     seq = "".join(seq.strip().split())
     if strand == "-":
-        seq = easyfata.reverse_complement(seq)
+        seq = easyfasta.reverse_complement(seq)
     return seq
 
 
