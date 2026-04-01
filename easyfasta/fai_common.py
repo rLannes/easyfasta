@@ -1,6 +1,6 @@
 """This module manage all fai related functions"""
 from collections import deque
-import easyfata
+import easyfasta
 from pathlib import Path
 import logging
 log = logging.getLogger(__name__)
