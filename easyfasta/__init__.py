@@ -6,7 +6,7 @@ Breaking changes from v1.0.14:
 - build_index() now builds a .fai index file, use build_dico_index() for dictionary index
 - get_sequence_index() has been renamed to get_sequence_dico_index()
 """
-from .easyfata import(
+from .easyfasta import(
     wrap_sequence,
     build_dico_index,
     get_sequence_dico_index,
