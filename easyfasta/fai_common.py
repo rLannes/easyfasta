@@ -43,7 +43,7 @@ def fasta_index_fai(fasta):
     index = fasta + ".fai" 
     name = None
     offset = None
-    seq_size = Nonedata
+    seq_size = None
     line_base_checker = line_length_checker()
     line_off_checker = line_length_checker()
     with open(fasta) as fi, open(index, "w") as fo:
