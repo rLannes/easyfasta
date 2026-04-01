@@ -6,16 +6,20 @@ Breaking changes from v1.0.14:
 - build_index() now builds a .fai index file, use build_dico_index() for dictionary index
 - get_sequence_index() has been renamed to get_sequence_dico_index()
 """
+from .common import(
+fasta_iter,
+complement,
+reverse,
+reverse_complement,
+wrap_sequence,
+)
+
 from .easyfasta import(
-    wrap_sequence,
+
     build_dico_index,
     get_sequence_dico_index,
     get_sequence_id,
-    fasta_iter,
     load_fasta,
-    complement,
-    reverse,
-    reverse_complement,
     build_index,
     load_index,
     query

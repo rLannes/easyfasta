@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing
-from  easyfasta import fai_common, common
+from . import fai_common
+from . import common
 from pathlib import Path
 from collections.abc import Iterable
 from typing import TextIO, Generator
