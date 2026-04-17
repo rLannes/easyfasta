@@ -13,7 +13,7 @@ def fastq_to_fasta(fastq: str, fasta: str):
 def main():
     parse = argparse.ArgumentParser(description="make a fasta from a fastq")
     parse.add_argument("--fastq", "-fq", help='fastq file')
-    parse.add_subparsers("--fastq", "-fa", help="output fasta, will erase if the file exists")
+    parse.add_argument("--fastq", "-fa", help="output fasta, will erase if the file exists")
     args = parse.parse_args()
     assert args.fastq != args.fasta
     fastq_to_fasta(args.fastq, args.fasta)
