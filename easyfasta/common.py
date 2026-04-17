@@ -40,6 +40,48 @@ def reverse_complement(seq: str) -> str:
     return "".join([DNA_COMPLEMENT[x] for x in seq[::-1]])
 
 
+def fastq_iter(open_file: TextIO, position: bool=None)-> Generator[tuple[str, str, str], None, None] |  Generator[tuple[str, str, str, int], None, None]:
+    """
+    An Iterator over an opened FASTQ file.
+
+    Note: Developed for large FASTQ files that should not be loaded into memory.
+    Validates record structure by checking the '+' separator and that len(sequence) == len(quality).
+
+    .. code-block:: python
+
+        with open(fastq_file) as fi:
+            for identifier, sequence, quality in fastq_iter(fi):
+                print(identifier, sequence, quality)
+
+    :param TextIO open_file: an opened FASTQ file
+    :param bool position: if true return the byte offset of the record start as reported by tell. The signature becomes Generator((str, str, str, int))
+    :return Generator((str, str, str)): Iterable(identifier, sequence, quality)
+    """
+    
+    pos = 0
+    
+    id_, seq, qual = "", "", ""
+    open_file.seek(0)
+
+    line = open_file.readline()
+    while line:
+
+        if line.startswith('@'):
+            id_ = line.strip()[1:]
+            seq = open_file.readline().strip()
+            if "+" != open_file.readline().strip():
+                raise AssertionError("record id_: {}, seq:{}, at pos {} is broken".format(id_, seq, pos ))
+            qual =  open_file.readline().strip()
+            if len(qual) != len(seq):
+                raise AssertionError("record id_: {}, seq:{}, qual: {}, at pos {}. is broken len(qual) != len(seq)".format(id_, seq,qual, pos,  ))
+                                 
+            if not position:
+                 yield id_, seq, qual
+            else:
+                yield id_, seq, qual, pos
+        pos = open_file.tell()
+        line = open_file.readline()
+
 
 
 def fasta_iter(open_file: TextIO, position: bool=None) -> Generator[tuple[str, str], None, None] |  Generator[tuple[str, str, int], None, None]:

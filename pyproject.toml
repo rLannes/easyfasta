@@ -30,6 +30,8 @@ classifiers = [ "Development Status :: 5 - Production/Stable",
   "Programming Language :: Python :: 3.13",
 ]
 
+[project.scripts]
+easy_FastqtoFa = "easyfasta.fastqToFasta:main"
 
 [tool.hatch.version]
 source = "vcs"
