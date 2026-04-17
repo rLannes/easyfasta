@@ -5,6 +5,9 @@ Now support fai index due to popular demand.
 Breaking changes from v1.0.14:
 - build_index() now builds a .fai index file, use build_dico_index() for dictionary index
 - get_sequence_index() has been renamed to get_sequence_dico_index()
+
+v.1.2 
+now come with fastq to fasta will soon implement fai for fastq
 """
 from .common import(
 fasta_iter,
