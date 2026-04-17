@@ -10,10 +10,7 @@ def fastq_to_fasta(fastq: str, fasta: str):
         for record in fastq_iter(fi):
             fo.write(">{}\n{}\n".format(record[0], record[1]))
 
-
-
-if __name__ == "__main__":
-    
+def main():
     parse = argparse.ArgumentParser(description="make a fasta from a fastq")
     parse.add_argument("--fastq", "-fq", help='fastq file')
     parse.add_subparsers("--fastq", "-fa", help="output fasta, will erase if the file exists")
@@ -21,3 +18,6 @@ if __name__ == "__main__":
     assert args.fastq != args.fasta
     fastq_to_fasta(args.fastq, args.fasta)
     
+
+if __name__ == "__main__":
+    main()
