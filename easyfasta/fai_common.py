@@ -6,7 +6,7 @@ import typing
 from collections.abc import Iterable
 from typing import TextIO, Generator
 from .common import fasta_iter, wrap_sequence, reverse_complement
-#from common import fasta_iter, wrap_sequence, reverse_complement
+
 
 from pathlib import Path
 import logging
