@@ -2,13 +2,13 @@ import argparse
 import typing
 from collections.abc import Iterable
 from typing import TextIO, Generator
-from .common import fastq_iter
+from .common import fastq_iter, wrap_sequence
 
 
 def fastq_to_fasta(fastq: str, fasta: str):
     with open(fastq) as fi, open(fasta, "w") as fo:
         for record in fastq_iter(fi):
-            fo.write(">{}\n{}\n".format(record[0], record[1]))
+            fo.write(">{}\n{}\n".format(record[0], wrap_sequence(record[1])))
 
 def main():
     parse = argparse.ArgumentParser(description="make a fasta from a fastq")
