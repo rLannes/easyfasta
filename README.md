@@ -12,6 +12,14 @@ A lightweight functional Python library for efficient FASTA file parsing and DNA
 - **Formatting**: Convert sequences to multi-line FASTA format
 - **Does not validate input**: users are responsible to provide correctly formatted files.
 
+## new in 1.2.6
+
+query function accepting dict like object:
+query_position
+query_iter
+query_splice
+
+
 ## Installation
 python 3.8+
 ```
@@ -42,10 +50,7 @@ for header, seq in found:
 
 # Extract specific sequences using a dictionary index
 index = build_dico_index('sequences.fasta')
-# using pickle you can save and load the index
-#import pickle
-#pickle.dump(index, "save_index_file.pkl")
-#index = pickle.load("save_index_file.pkl")
+
 target_ids = ['seq1', 'seq2', 'seq3']
 found = get_sequence_dico_index('sequences.fasta', target_ids, index, ignore_unfound=True)
 for header, seq in found:
@@ -55,6 +60,8 @@ for header, seq in found:
 build_index('sequences.fasta')  # creates sequences.fasta.fai
 index = load_index('sequences.fasta')  # load into memory for repeated queries
 seq = query('sequences.fasta', 'seq1', 0, 100, strand='+', dico_index=index)
+# or 
+seq = query_position('sequences.fasta', {"chr":'seq1', "start": 0, "end": 100, "strand"='+'}, dico_index=index)
 
 # DNA manipulation
 dna = "ATCGGTAA"

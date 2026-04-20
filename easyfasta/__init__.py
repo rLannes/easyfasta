@@ -8,6 +8,12 @@ Breaking changes from v1.0.14:
 
 v.1.2 
 now come with fastq to fasta will soon implement fai for fastq
+v.1.2.6
+query function family extended with member accepting dict like object:
+query_position
+query_iter
+query_splice
+
 """
 from .common import(
 fasta_iter,
@@ -25,15 +31,27 @@ from .easyfasta import(
     load_fasta,
     build_index,
     load_index,
-    query
+    query,
+
+
+)
+
+from .fai_common import(
+    query_position,
+    query_iter,
+    query_splice
 )
 
 __all__ = [
     "wrap_sequence",
     "build_index",
-    "build_index",
+    "build_dico_index",
     "load_index",
+    "fasta_iter",
     "query",
+    "query_position",
+    "query_iter",
+    "query_splice",
     "get_sequence_dico_index",
     "get_sequence_id",
     "build_index"
