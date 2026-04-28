@@ -54,7 +54,7 @@ __all__ = [
     "query_splice",
     "get_sequence_dico_index",
     "get_sequence_id",
-    "build_index"
+    "build_index",
     "fasta_iter",
     "load_fasta",
     "complement",
