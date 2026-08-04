@@ -1,3 +1,7 @@
+"""
+High-level, user-facing entry points for building .fai indexes, querying
+sequences by coordinate, and loading whole fasta files into memory.
+"""
 from __future__ import annotations
 import typing
 from . import fai_common
@@ -40,16 +44,17 @@ def load_index(fasta):
     :param str|Path fasta: the fasta file whose index to load
     :return dict[str, list]: index dictionary identifier -> [length, offset, linebases, line_bytes]
     """
-    index = fasta + ".fai"
-    if not Path(index).is_file():
+    fasta = Path(fasta)
+    index = fasta.with_name(fasta.name + ".fai")
+    if not index.is_file():
         raise AssertionError("cannot find the fai file, is your fasta indexed? ")
     
-    if dico_index is None:
-        dico_index = {}
-        with open(index) as fi:
-            for l in fi:
-                spt = l.strip().split()
-                dico_index[spt[0]] = spt[1:]
+
+    dico_index = {}
+    with open(index) as fi:
+        for l in fi:
+            spt = l.strip().split()
+            dico_index[spt[0]] = spt[1:]
     return dico_index
 
 
@@ -62,11 +67,14 @@ def build_dico_index(fasta_file: str|Path) -> dict[str, int]:
     """
     index = {}
     with open(fasta_file) as fi:
-        for p, s, i in common.fasta_iter(fi, position=True):
-            index[p.split()[0]] = i
+        for frecord, i in common.fasta_iter(fi, position=True):
+            index[frecord.id] = i
     return index
 
-def get_sequence_dico_index(fasta_file: str|Path, identifiers:Iterable[str], index_dict:dict[str, int], ignore_unfound: bool = True) -> list[tuple[str, str]]:
+
+def get_sequence_dico_index(fasta_file: str|Path, identifiers:Iterable[str],
+                             index_dict:dict[str, int],
+                               ignore_unfound: bool = True) -> list[tuple[str, str]]:
     """
     uses index to get sequence from a file faster than just parsing through the file. you need to generate an index first (you can use build_index)
     will not raise an error if any identifier in identifiers are not in the dict. you can turn off this by setting ignore_unfound to True
@@ -83,7 +91,7 @@ def get_sequence_dico_index(fasta_file: str|Path, identifiers:Iterable[str], ind
     :param str|Path  fasta_file: a fasta file
     :param Iterable identifier: an iterable with id to recover sequence from
     :param dict[str, int] index_dict: a dictionary associating identifier to a position in file, you can make one from build_index
-    :param bool ignore_unfound: defualt False.
+    :param bool ignore_unfound: default True.
     :return [(str, str)]: [(identifier, sequence)] for each sequences with identifier present in identifier
 
     """
@@ -112,10 +120,13 @@ def get_sequence_dico_index(fasta_file: str|Path, identifiers:Iterable[str], ind
     return res
 
 
-def get_sequence_id(fasta_file: str|Path, identifiers: Iterable[str], identifier_only: bool=True) -> list[tuple[str, str]]:
+def get_sequence_id(fasta_file: str|Path,
+                     identifiers: Iterable[str],
+                     identifier_only: bool=True) -> list[tuple[str, str]]:
     """
     return sequence in identifiers from the fasta_file. !! will NOT throw a warning/error if a sequence is not found in the fasta!!
-
+    return order is arbitrary
+    
     :param str|Path  fasta_file: a fasta file
     :param Iterable identifier: an iterable with id to recover sequence from
     :param bool identifier_only: fasta are composed of identifier and metadata, by default only use the identifier part of the fasta line set to false to use the full line.
@@ -123,7 +134,7 @@ def get_sequence_id(fasta_file: str|Path, identifiers: Iterable[str], identifier
 
     """
     res = []
-
+    identifiers = set(list(identifiers))
     with open(fasta_file) as open_file:
         for p, s in common.fasta_iter(open_file=open_file):
             if identifier_only:

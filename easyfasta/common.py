@@ -1,3 +1,7 @@
+"""
+Low-level, format-agnostic building blocks: sequence complement/reverse
+helpers, the FastaRecord container, and the fasta/fastq line iterators.
+"""
 from __future__ import annotations
 import typing
 from collections.abc import Iterable
@@ -69,44 +73,78 @@ class FastaRecord():
         >>> desc, seq = record
     """
     def __init__(self, description, seq):
+        """
+        :param str description: the description line of the FASTA record
+        :param str seq: the nucleotide or amino acid sequence
+        """
         self._description = description.strip()
         self._seq = seq.strip()
-        
+
     def __iter__(self):
+        """
+        :return Iterator[str, str]: (description, seq), for tuple-style unpacking
+        """
         return iter((self._description, self._seq))
 
     def __getitem__(self, value):
-    
+        """
+        dict-style or tuple-style access to the record's fields.
+
+        :param int|str value: 0/1 for tuple-style access, or one of "seq", "id", "description"
+        :return str: the requested field
+        """
         if isinstance(value, int):
             assert 0 <= value <= 1
             return (self._description, self._seq)[value]
 
         assert value in ["seq", "id", "description"]
         return getattr(self, value)
-    
+
     @property
     def len(self):
+        """
+        :return int: the length of the sequence
+        """
         return len(self._seq)
-    
+
     @property
     def id(self):
+        """
+        :return str: the first word of the description line
+        """
         return self._description.split()[0]
-    
+
     @property
     def description(self):
+        """
+        :return str: the full description line
+        """
         return self._description
-    
+
     @property
     def seq(self):
+        """
+        :return str: the full sequence
+        """
         return self._seq
-    
+
     def __eq__(self, other):
+        """
+        :param FastaRecord other: the record to compare against
+        :return bool: True if description and seq are equal
+        """
         return (self._description, self._seq) == (other._description, other._seq)
-    
+
     def __str__(self):
+        """
+        :return str: a valid, wrapped FASTA-formatted string for this record
+        """
         return f">{self._description}\n{wrap_sequence(self._seq)}"
-    
+
     def __repr__(self):
+        """
+        :return str: a debug representation showing id and sequence length
+        """
         return f"FastaRecord('{self.id}', len={self.len} bp)"
 
 

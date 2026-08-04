@@ -1,5 +1,7 @@
+"""This module manages all .fai index related functions: building, loading,
+and querying by coordinate, including the Position helper type."""
 from __future__ import annotations
-"""This module manage all fai related functions"""
+from dataclasses import dataclass
 from collections import deque
 
 import typing
@@ -8,16 +10,31 @@ from typing_extensions import TypedDict, NotRequired
 from typing import TextIO, Generator, Optional
 from .common import fasta_iter, wrap_sequence, reverse_complement
 
-
+import os
 from pathlib import Path
 import logging
 log = logging.getLogger(__name__)
 
 class line_length_checker():
+    """
+    Tracks the last few line lengths seen while scanning a fasta sequence
+    to enforce the .fai constraint that all lines must be the same size
+    except (optionally) the last one.
+    """
     def __init__(self):
+        """
+        :return None: starts with an empty history
+        """
         self.data = deque()
 
     def check(self, size):
+        """
+        record a new line length and check it is consistent with the
+        previous ones (only the most recent line may differ in size).
+
+        :param int size: the length of the line just read
+        :return bool: False if a length mismatch is detected, True otherwise
+        """
         self.data.appendleft(size)
         if len(self.data) > 3:
             self.data.pop()
@@ -28,9 +45,15 @@ class line_length_checker():
         return True
 
     def reset(self):
+        """
+        :return None: clears the recorded history, for use at record boundaries
+        """
         self.data.clear()
 
     def size(self):
+        """
+        :return int: the most recently recorded line length
+        """
         return self.data.pop()
 
 
@@ -40,15 +63,38 @@ def make_fasta_multiline(fasta, out):
     helper function take a fasta file and make it multiline.
     usefull because it garantee all lines are the same length (required by .fai format) except the last one
 
+    :param str|Path fasta: the fasta file to reformat
+    :param str|Path out: path to write the reformatted, multiline fasta to
+    :return None: writes the reformatted fasta to out
+
     """
 
     with open(fasta) as fi, open(out, 'w') as fo:
         for p,s in fasta_iter(fi):
             fo.write(">{}\n{}\n".format(p, wrap_sequence(s, 100)))
 
-def fasta_index_fai(fasta):  
 
-    index = fasta + ".fai" 
+
+
+def fasta_index_fai(fasta):
+    """
+    Build a .fai index file next to fasta by scanning it once.
+    have undefined behaviour if empty line inside a sequence.
+
+    :param str|Path fasta: the fasta file to index
+    :raises AssertionError: if the fasta file is empty or its sequence lines
+        are not all the same size (only the last line of a record may differ)
+    :return None: writes a fasta.fai index file next to fasta
+    """
+    fasta = Path(fasta)
+    index = fasta.with_name(fasta.name + ".fai")
+    try:
+        assert os.stat(fasta).st_size != 0
+    except AssertionError:
+        raise AssertionError("fasta file is empty ERROR")
+    except:
+        raise
+
     name = None
     offset = None
     seq_size = None
@@ -91,12 +137,120 @@ def fasta_index_fai(fasta):
 
 
 # class for typeHint
-class Position(TypedDict):
+@dataclass
+class Position:
     """A genomic interval."""
     chr: str
     start: int
     end: int
-    strand: NotRequired[str]
+    strand: str = "." 
+
+    def __lt__(self, other):
+        """
+        :param Position other: another position on the same chr
+        :return bool: True if this position's start is before other's
+        """
+        assert self["chr"] == other["chr"]
+        return self["start"] < other["start"]
+
+    def __gt__(self, other):
+        """
+        :param Position other: another position on the same chr
+        :return bool: True if this position's start is after other's
+        """
+        assert self["chr"] == other["chr"]
+        return self["start"] > other["start"]
+
+    def __le__(self, other):
+        """
+        :param Position other: another position on the same chr
+        :return bool: True if this position's start is before or equal to other's
+        """
+        assert self["chr"] == other["chr"]
+        return self["start"] <= other["start"]
+
+    def __ge__(self, other):
+        """
+        :param Position other: another position on the same chr
+        :return bool: True if this position's start is after or equal to other's
+        """
+        assert self["chr"] == other["chr"]
+        return self["start"] >= other["start"]
+
+    @staticmethod
+    def from_dict(dict):
+        """
+        :param dict dict: a dict-like object with keys "chr", "start", "end", and optionally "strand"
+        :return Position: a new Position built from the given dict
+        """
+        return Position(dict["chr"], dict["start"], dict["end"], dict.get("strand", "."))
+
+
+    def to_dict(self):
+        return {"chr": self["chr"], "start": self["start"], "end": self["end"], "strand": self["strand"]}
+
+    
+    def __len__(self):
+        """
+        :return int: the number of fields in a Position (always 4)
+        """
+        return 4
+
+    def size(self):
+        """
+        :return int: the length of the interval, end - start
+        """
+        return self["end"] - self["start"]
+
+    def __eq__(self, other):
+        """
+        :param Position other: another position or dict-like object to compare against
+        :return bool: True if chr, start, end, and strand all match. strand defaults
+            to "." when absent from other, matching Position's own default
+        """
+        if self["chr"] != other["chr"]:
+            return False
+        if self["start"] != other["start"]:
+            return False
+        if self["end"] != other["end"]:
+            return False
+        if self["strand"] != other.get("strand", "."):
+            return False
+        return True
+
+
+    def __getitem__(self, key):
+        """
+        :param str key: one of "chr", "start", "end", "strand"
+        :return: the value stored under key
+        :raises KeyError: if key is not a valid field name
+        """
+        try:
+            return getattr(self, key)
+        except AttributeError:
+            raise KeyError(key)
+
+    def get(self, key, default=None):
+        """
+        :param str key: one of "chr", "start", "end", "strand"
+        :param default: value to return if key is not a valid field name
+        :return: the value stored under key, or default
+        """
+        return getattr(self, key, default)
+
+    def keys(self):
+        """
+        :return tuple[str]: the field names of a Position
+        """
+        return ("chr", "start", "end", "strand")
+
+    def __contains__(self, key):
+        """
+        :param str key: a candidate field name
+        :return bool: True if key is one of Position's field names
+        """
+        return key in self.keys()
+
 
 def query_position(fasta: str, position: Position,
                    dico_index: Optional[dict] = None) -> str:
@@ -155,10 +309,11 @@ def query_iter(fasta: str, positions: list[Position],
     """
 
 
-    index = fasta + ".fai"
-    if not Path(index).is_file():
+    fasta = Path(fasta)
+    index = fasta.with_name(fasta.name + ".fai")
+    if not index.is_file():
         raise FileNotFoundError("cannot find the fai file, is your fasta indexed? ")
-    
+
     if dico_index is None:
         dico_index = _get_dico_index(index)
 
@@ -212,17 +367,18 @@ def query_splice(fasta: str, positions: list[Position],
     :see also: query_iter() for independent per-region queries
     """
 
-    index = fasta + ".fai"
-    if not Path(index).is_file():
+    fasta = Path(fasta)
+    index = fasta.with_name(fasta.name + ".fai")
+    if not index.is_file():
         raise FileNotFoundError("cannot find the fai file, is your fasta indexed? ")
-    
+
     if dico_index is None:
         dico_index = _get_dico_index(index)
 
     seqs = ""
     with open(fasta) as fi:
         fi.seek(0)
-        for p in positions:
+        for p in sorted(positions, key=lambda x: x["start"]):
             (start_bytes, end_bytes) = _get_bytes( p["chr"], dico_index,
                                                    p["start"], p["end"])
 
@@ -266,31 +422,15 @@ def query(fasta: str, name: str, start: int, end: int, strand="+", dico_index=No
 
     :return str: the extracted sequence
     """
-    index = fasta + ".fai"
-    if not Path(index).is_file():
+    fasta = Path(fasta)
+    index = fasta.with_name(fasta.name + ".fai")
+    if not index.is_file():
         raise FileNotFoundError("cannot find the fai file, is your fasta indexed? ")
-    
+
     if dico_index is None:
         dico_index = _get_dico_index(index)
 
     (start_bytes, end_bytes) = _get_bytes(name, dico_index, start, end)
-
-    """if name not in dico_index:
-        log.error("{} not in index".format(name))
-        raise AssertionError
-    length,offset,linebases,line_bytes = [int(x) for x in dico_index[name]]
-
-    if start > length or end > length or start < 0 or end < start:
-        log.error("coordinate error")
-        raise AssertionError
-
-
-    line_number = start // linebases
-    base_offset = start % linebases
-    start_bytes =  offset + (line_number * line_bytes) + base_offset
-    line_number = end // linebases
-    base_offset = end % linebases
-    end_bytes =  offset + (line_number * line_bytes) + base_offset"""
 
     seq = ""
     with open(fasta) as fi:
