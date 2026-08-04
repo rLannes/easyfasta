@@ -12,7 +12,7 @@ A lightweight functional Python library for efficient FASTA file parsing and DNA
 - **Formatting**: Convert sequences to multi-line FASTA format
 - **Does not validate input**: users are responsible to provide correctly formatted files.
 
-## new in 1.2.7
+## new in 1.3
 
 query function accepting dict like object:
 query_position
